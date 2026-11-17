@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌺 沖繩 5 天 4 夜自駕自由行手冊</title>
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts (Noto Sans TC & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 隱藏水平捲軸但保留滑動功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* 頁面切換淡入動畫 */
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 防止 iOS 點擊輸入框自動放大 */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-200 text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- App 主容器：在桌機上置中模擬手機螢幕，手機上全寬 -->
+    <div class="max-w-md mx-auto min-h-screen bg-[#F8FAFC] shadow-2xl relative flex flex-col pb-24">
+
+        <!-- ==================== TAB 1: 行程 (ITINERARY) ==================== -->
+        <section id="tab-itinerary" class="tab-content flex-1 flex flex-col">
+            <!-- 黏性頂部導覽列 -->
+            <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 pt-4 pb-3 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <span class="text-xs font-semibold tracking-wider text-brand-600 uppercase bg-brand-50 px-2 py-0.5 rounded-full">OKINAWA ROAD TRIP</span>
+                        <h1 class="text-xl font-bold text-slate-900 mt-1">🌺 沖繩 5 天 4 夜自駕手冊</h1>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">自駕基地</span>
+                        <span class="text-xs font-semibold text-slate-700 bg-sky-50 text-sky-700 px-2.5 py-1 rounded-lg">🚗 那霸・恩納</span>
+                    </div>
+                </div>
+
+                <!-- 天數選擇膠囊按鈕 (可水平滑動) -->
+                <div id="day-pills" class="flex space-x-2 overflow-x-auto no-scrollbar py-1">
+                    <!-- 由 JS 動態生成 Day 1 ~ Day 5 按鈕 -->
+                </div>
+            </header>
+
+            <!-- 當日行程摘要橫幅 -->
+            <div id="day-summary" class="px-4 pt-4">
+                <!-- 由 JS 動態生成 -->
+            </div>
+
+            <!-- 行程時間軸卡片列表 -->
+            <div id="itinerary-list" class="px-4 py-3 space-y-4 flex-1">
+                <!-- 由 JS 動態生成行程卡片 -->
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: 匯率 (CURRENCY) ==================== -->
+        <section id="tab-currency" class="tab-content hidden flex-1 flex flex-col px-4 pt-6 fade-in">
+            <div class="mb-5">
+                <h2 class="text-2xl font-bold text-slate-900">💴 日幣匯率換算</h2>
+                <p class="text-sm text-slate-500 mt-1">逛街血拼神器，內建 10% 免稅試算</p>
+            </div>
+
+            <!-- 匯率設定卡片 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-4 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+                        匯率
+                    </div>
+                    <div>
+                        <label for="exchange-rate" class="text-xs text-slate-500 block">目前設定 (1 JPY = ? TWD)</label>
+                        <span class="text-xs text-slate-400">修改後會自動記憶</span>
+                    </div>
+                </div>
+                <input type="number" id="exchange-rate" step="0.001" value="0.215" 
+                    class="w-24 text-right font-bold text-lg text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <!-- 主計算機卡片 -->
+            <div class="bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 text-white rounded-3xl p-5 shadow-lg mb-4">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-medium text-sky-300">輸入日幣金額 (JPY ¥)</span>
+                    <button onclick="clearJpy()" class="text-xs text-cyan-300 hover:text-cyan-200 font-medium px-2 py-0.5 rounded bg-white/10">清除歸零</button>
+                </div>
+                <div class="relative flex items-center border-b border-slate-700 pb-3 mb-4">
+                    <span class="text-2xl font-bold text-slate-400 mr-2">¥</span>
+                    <input type="number" id="jpy-input" placeholder="0" inputmode="numeric"
+                        class="w-full bg-transparent text-3xl font-bold text-white placeholder-slate-600 focus:outline-none">
+                </div>
+
+                <!-- 快捷金額按鈕 -->
+                <div class="grid grid-cols-4 gap-2 mb-5">
+                    <button onclick="addJpy(1000)" class="bg-white/10 hover:bg-white/20 active:scale-95 transition py-2 rounded-xl text-xs font-semibold">+1,000</button>
+                    <button onclick="addJpy(3000)" class="bg-white/10 hover:bg-white/20 active:scale-95 transition py-2 rounded-xl text-xs font-semibold">+3,000</button>
+                    <button onclick="addJpy(5000)" class="bg-white/10 hover:bg-white/20 active:scale-95 transition py-2 rounded-xl text-xs font-semibold">+5,000</button>
+                    <button onclick="addJpy(10000)" class="bg-white/10 hover:bg-white/20 active:scale-95 transition py-2 rounded-xl text-xs font-semibold">+10,000</button>
+                </div>
+
+                <!-- 換算結果區 -->
+                <div class="space-y-3">
+                    <div class="bg-white/10 rounded-2xl p-3.5 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs text-slate-300 block">含稅台幣 (一般結帳)</span>
+                            <span class="text-[11px] text-slate-400">原價直接換算</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-300 mr-1">NT$</span>
+                            <span id="twd-result" class="text-2xl font-bold text-emerald-400">0</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-brand-500/20 border border-brand-500/40 rounded-2xl p-3.5 flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="text-xs font-semibold text-cyan-200">免稅價 (退 10% 稅)</span>
+                                <span class="text-[10px] bg-brand-500 text-white px-1.5 py-0.2 rounded">滿 ¥5,500 適用</span>
+                            </div>
+                            <span class="text-xs text-cyan-300/80 block mt-0.5">免稅日幣：¥<span id="taxfree-jpy">0</span></span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-cyan-200 mr-1">NT$</span>
+                            <span id="taxfree-twd" class="text-2xl font-bold text-cyan-300">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 常見金額速查表 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 mb-3">📊 常見金額速查表</h3>
+                <div id="quick-rate-table" class="divide-y divide-slate-100 text-sm">
+                    <!-- 由 JS 動態生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: 清單 (CHECKLIST) ==================== -->
+        <section id="tab-checklist" class="tab-content hidden flex-1 flex flex-col px-4 pt-6 fade-in">
+            <div class="mb-4">
+                <h2 class="text-2xl font-bold text-slate-900">✅ 沖繩必備與採買清單</h2>
+                <p class="text-sm text-slate-500 mt-1">勾選狀態會自動儲存在手機瀏覽器中</p>
+            </div>
+
+            <!-- 分類切換按鈕 -->
+            <div class="grid grid-cols-2 gap-2 bg-slate-200/70 p-1 rounded-2xl mb-4">
+                <button id="subtab-packing" onclick="switchChecklistType('packing')" 
+                    class="py-2.5 rounded-xl text-sm font-bold transition bg-white text-slate-900 shadow-sm">
+                    🚗 自駕與行李清單
+                </button>
+                <button id="subtab-shopping" onclick="switchChecklistType('shopping')" 
+                    class="py-2.5 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
+                    🎁 沖繩必買伴手禮
+                </button>
+            </div>
+
+            <!-- 完成度進度條卡片 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="checklist-progress-label" class="text-xs font-bold text-slate-700">自駕與打包進度</span>
+                    <span id="checklist-progress-text" class="text-xs font-bold text-brand-600">0 / 0 (0%)</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                    <div id="checklist-progress-bar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- 新增項目輸入框 -->
+            <form onsubmit="addChecklistItem(event)" class="flex space-x-2 mb-4">
+                <input type="text" id="new-item-input" placeholder="新增自訂項目（例如：日文譯本、防水手機袋...）" 
+                    class="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm">
+                <button type="submit" class="bg-slate-900 hover:bg-slate-800 active:scale-95 transition text-white font-semibold px-4 py-2.5 rounded-xl text-sm shadow-sm whitespace-nowrap">
+                    + 新增
+                </button>
+            </form>
+
+            <!-- 清單列表 -->
+            <div id="checklist-container" class="space-y-2.5 flex-1 pb-4">
+                <!-- 由 JS 動態生成清單項目 -->
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: 資訊 (INFO & EMERGENCY) ==================== -->
+        <section id="tab-info" class="tab-content hidden flex-1 flex flex-col px-4 pt-6 fade-in space-y-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900">🆘 自駕與實用資訊</h2>
+                <p class="text-sm text-slate-500 mt-1">住宿地址、緊急救援專線與日語手指溝通卡</p>
+            </div>
+
+            <!-- 住宿資訊卡片 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg">🏨 那霸下榻飯店資訊</span>
+                    <span class="text-xs text-slate-400">Check-in 15:00</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900">那霸國際通格拉斯麗飯店</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Hotel Gracery Naha (ホテルグレイスリー那覇)</p>
+                <div class="bg-slate-50 rounded-xl p-3 mt-3 border border-slate-100 space-y-1">
+                    <p id="hotel-address" class="text-sm font-medium text-slate-800 select-all">〒900-0014 沖縄県那覇市松尾 1-3-6</p>
+                    <p class="text-xs font-mono text-brand-700 font-semibold">🚗 車用導航 MapCode：33 157 254*82</p>
+                    <p class="text-xs text-slate-500">📍 位於國際通入口正對面，單軌縣廳前站步行 5 分鐘</p>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-3">
+                    <button onclick="copyText('〒900-0014 沖縄県那覇市松尾 1-3-6', '已複製飯店日文地址！')" 
+                        class="flex items-center justify-center space-x-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 transition text-slate-700 font-semibold py-2.5 rounded-xl text-xs">
+                        <span>📋 複製地址</span>
+                    </button>
+                    <button onclick="openBigTextModal('運転手さん、こちらのホテルまでお願いします。', '〒900-0014 沖縄県那覇市松尾 1-3-6\n(ホテルグレイスリー那覇 / 國際通格拉斯麗飯店)')" 
+                        class="flex items-center justify-center space-x-1.5 bg-brand-600 hover:bg-brand-700 active:scale-95 transition text-white font-semibold py-2.5 rounded-xl text-xs shadow-sm">
+                        <span>🚕 放大給司機/店員看</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 沖繩自駕注意事項提醒 -->
+            <div class="bg-amber-50/90 rounded-2xl p-4 border border-amber-200/80">
+                <h3 class="text-sm font-bold text-amber-900 mb-2.5 flex items-center">
+                    <span class="mr-1.5">⚠️</span> 沖繩自駕必讀安全守則
+                </h3>
+                <ul class="space-y-2 text-xs text-amber-900/90 leading-relaxed">
+                    <li class="flex items-start space-x-2">
+                        <span class="font-bold text-amber-600">1.</span>
+                        <span><strong>右駕靠左行駛：</strong>口訣「左轉拐小彎、右轉拐大彎」，方向燈在方向盤右側（打錯雨刷很正常別緊張）。</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="font-bold text-amber-600">2.</span>
+                        <span><strong>斑馬線絕對禮讓：</strong>看到行人準備過馬路必須完全停下禮讓，遇「止まれ」紅色倒三角標誌務必完全煞停 3 秒。</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="font-bold text-amber-600">3.</span>
+                        <span><strong>嚴禁酒駕與路邊違停：</strong>日本酒駕連同車乘客都會連坐重罰；市區請務必停入「Coin Parking」投幣停車場。</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="font-bold text-amber-600">4.</span>
+                        <span><strong>還車前加滿油：</strong>一般租車多為加「Regular（紅色油槍）」，還車前請在營業所附近加油站加滿並保留收據。</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 緊急聯絡電話卡片 -->
+            <div class="bg-rose-50/80 rounded-2xl p-4 border border-rose-100">
+                <h3 class="text-sm font-bold text-rose-800 mb-3 flex items-center">
+                    <span class="mr-1.5">🚨</span> 沖繩緊急救援與租車事故專線
+                </h3>
+                <div class="grid grid-cols-2 gap-2.5 mb-2.5">
+                    <a href="tel:110" class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm active:scale-95 transition">
+                        <div>
+                            <span class="text-xs text-slate-500 block">警察局 (事故報案)</span>
+                            <span class="text-lg font-bold text-slate-900">110</span>
+                        </div>
+                        <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm">📞</span>
+                    </a>
+                    <a href="tel:119" class="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between shadow-sm active:scale-95 transition">
+                        <div>
+                            <span class="text-xs text-slate-500 block">救護車 / 火警</span>
+                            <span class="text-lg font-bold text-slate-900">119</span>
+                        </div>
+                        <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm">🚑</span>
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    <div class="bg-white p-3 rounded-xl border border-rose-100 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold text-slate-800 block">OTS 租車中文事故救援專線</span>
+                            <span class="text-[11px] text-slate-500">發生擦撞請先報警 110 再聯繫租車公司</span>
+                        </div>
+                        <a href="tel:098-856-8877" class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition whitespace-nowrap">
+                            098-856-8877
+                        </a>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-rose-100 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold text-slate-800 block">駐那霸辦事處急難救助</span>
+                            <span class="text-[11px] text-slate-500">護照遺失、重大急難求助</span>
+                        </div>
+                        <a href="tel:090-1942-1107" class="bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition whitespace-nowrap">
+                            090-1942-1107
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 實用日語手指溝通卡 -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <h3 class="text-sm font-bold text-slate-800 mb-1">🗣️ 自駕與購物日語溝通卡</h3>
+                <p class="text-xs text-slate-400 mb-3">點擊卡片可放大顯示給店員看</p>
+                <div class="space-y-2">
+                    <button onclick="openBigTextModal('レギュラー、満タン（まんたん）でお願いします。', '請幫我加滿 Regular（一般無鉛汽油），謝謝。')" 
+                        class="w-full text-left p-3 rounded-xl bg-sky-50/70 hover:bg-sky-100/70 transition flex justify-between items-center border border-sky-100">
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">レギュラー、満タンでお願いします。</span>
+                            <span class="text-xs text-slate-500">⛽ 加油站專用：請加滿 Regular 汽油</span>
+                        </div>
+                        <span class="text-xs text-brand-700 font-semibold bg-white px-2 py-1 rounded shadow-sm">放大 ↗</span>
+                    </button>
+
+                    <button onclick="openBigTextModal('免税（めんぜい）でお願いします。', '請問可以辦理退稅（免稅）嗎？')" 
+                        class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition flex justify-between items-center border border-slate-100">
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">免税でお願いします。</span>
+                            <span class="text-xs text-slate-500">🛍️ 請問可以辦理免稅嗎？</span>
+                        </div>
+                        <span class="text-xs text-brand-600 font-semibold bg-brand-50 px-2 py-1 rounded">放大 ↗</span>
+                    </button>
+
+                    <button onclick="openBigTextModal('ありがとうございます！', '非常謝謝你！')" 
+                        class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition flex justify-between items-center border border-slate-100">
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">ありがとうございます！</span>
+                            <span class="text-xs text-slate-500">😊 非常謝謝你！</span>
+                        </div>
+                        <span class="text-xs text-brand-600 font-semibold bg-brand-50 px-2 py-1 rounded">放大 ↗</span>
+                    </button>
+
+                    <button onclick="openBigTextModal('すみません、駐車場（ちゅうしゃじょう）はどこですか？', '不好意思，請問停車場在哪裡？')" 
+                        class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition flex justify-between items-center border border-slate-100">
+                        <div>
+                            <span class="text-sm font-bold text-slate-800 block">すみません、駐車場はどこですか？</span>
+                            <span class="text-xs text-slate-500">🅿️ 不好意思，請問停車場在哪裡？</span>
+                        </div>
+                        <span class="text-xs text-brand-600 font-semibold bg-brand-50 px-2 py-1 rounded">放大 ↗</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 底部固定導覽列 (BOTTOM NAV) ==================== -->
+        <nav class="fixed bottom-0 left-0 right-0 z-40">
+            <div class="max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-2 grid grid-cols-4 gap-1 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+                <button onclick="switchTab('itinerary')" id="nav-itinerary" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-brand-600 bg-brand-50/80 font-bold transition">
+                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                    <span class="text-[11px]">行程</span>
+                </button>
+                <button onclick="switchTab('currency')" id="nav-currency" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-700 font-medium transition">
+                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-[11px]">匯率</span>
+                </button>
+                <button onclick="switchTab('checklist')" id="nav-checklist" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-700 font-medium transition">
+                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    <span class="text-[11px]">清單</span>
+                </button>
+                <button onclick="switchTab('info')" id="nav-info" class="nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-700 font-medium transition">
+                    <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-[11px]">資訊</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ==================== 大字版溝通彈窗 (MODAL) ==================== -->
+        <div id="big-text-modal" class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeBigTextModal()">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl transform transition-all" onclick="event.stopPropagation()">
+                <span class="text-xs font-bold text-brand-600 bg-brand-50 px-3 py-1 rounded-full">請出示給對方看</span>
+                <p id="modal-jp-text" class="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug my-6 select-all"></p>
+                <p id="modal-sub-text" class="text-sm text-slate-500 whitespace-pre-line bg-slate-50 p-3 rounded-xl"></p>
+                <button onclick="closeBigTextModal()" class="mt-6 w-full bg-slate-900 text-white font-bold py-3 rounded-xl active:scale-95 transition">
+                    關閉視窗
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== 輕量提示訊息 (TOAST) ==================== -->
+        <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-300">
+            提示訊息
+        </div>
+
+    </div>
+
+    <!-- ==================== JAVASCRIPT 邏輯區 ==================== -->
+    <script>
+        // 1. 完整 5 天沖繩自駕行程資料庫
+        const itineraryData = [
+            {
+                day: 1,
+                date: "DAY 1",
+                title: "那霸市區與首里文化巡禮",
+                subtitle: "那霸機場取車 ➔ 琉球茶房 ➔ 首里城 ➔ 國際通 & 暖暮拉麵",
+                items: [
+                    {
+                        time: "11:00",
+                        category: "交通/租車",
+                        title: "那霸機場取車（OTS / ORIX 臨空豐崎營業所）",
+                        desc: "入境後搭乘租車公司免費接駁車前往臨空豐崎營業所，檢查車身外觀、確認保險並設定車用導航。",
+                        mapCode: "232 543 478*42",
+                        mapQuery: "OTS租車 臨空豐崎營業所"
+                    },
+                    {
+                        time: "12:30",
+                        category: "美食",
+                        title: "午餐：琉球茶房 Ashibiuna（あしびうなぁ）",
+                        desc: "在充滿古民家日式庭園氛圍的老宅裡，品嚐道地沖繩麵、沖繩苦瓜炒蛋與阿古豬料理。",
+                        mapCode: "33 161 595*26",
+                        mapQuery: "琉球茶房 Ashibiuna"
+                    },
+                    {
+                        time: "14:30",
+                        category: "景點",
+                        title: "首里城公園",
+                        desc: "走訪世界文化遺產守禮門與首里城跡，俯瞰那霸市區全景，感受琉球王國的歷史風華。",
+                        mapCode: "33 161 526*71",
+                        mapQuery: "首里城公園"
+                    },
+                    {
+                        time: "17:00",
+                        category: "購物",
+                        title: "國際通商店街 ＆ 第一牧志公設市場",
+                        desc: "沖繩最熱鬧的「奇蹟的一英里」！逛伴手禮店、鹽屋雪鹽冰淇淋，順遊牧志公設市場感受在地活力。",
+                        mapCode: "33 157 382*31",
+                        mapQuery: "國際通商店街"
+                    },
+                    {
+                        time: "19:30",
+                        category: "美食",
+                        title: "晚餐：暖暮拉麵 那霸牧志店",
+                        desc: "曾獲九州拉麵票選冠軍的超人氣豚骨拉麵，推薦加點半熟煮玉子與煎餃，湯頭濃郁順口。",
+                        mapCode: "33 157 443*55",
+                        mapQuery: "暖暮拉麵 那霸牧志店"
+                    }
+                ]
+            },
+            {
+                day: 2,
+                date: "DAY 2",
+                title: "中部海景與異國風美國村",
+                subtitle: "泊港魚市場 ➔ 殘波岬燈塔 ➔ 琉球村 ➔ 美國村日落",
+                items: [
+                    {
+                        time: "08:30",
+                        category: "美食",
+                        title: "早餐：泊港魚市場（泊いゆまち）",
+                        desc: "清晨漁獲直送！大啖平價新鮮的綜合生魚片蓋飯、海膽焗烤龍蝦與現切黑鮪魚。",
+                        mapCode: "33 216 115*44",
+                        mapQuery: "泊港魚市場"
+                    },
+                    {
+                        time: "10:30",
+                        category: "景點",
+                        title: "殘波岬燈塔",
+                        desc: "綿延兩公里的 30 公尺高珊瑚礁斷崖與純白燈塔，海天一色的壯麗景觀非常震撼，別忘了和巨大獅子像合照。",
+                        mapCode: "1005 685 296*55",
+                        mapQuery: "殘波岬燈塔"
+                    },
+                    {
+                        time: "13:00",
+                        category: "景點",
+                        title: "琉球村",
+                        desc: "重現百年紅瓦古民家的傳統主題園區，可欣賞熱鬧的 Eisa 太鼓舞表演、體驗三線琴與紅型染。",
+                        mapCode: "1005 033 066*66",
+                        mapQuery: "琉球村"
+                    },
+                    {
+                        time: "16:30",
+                        category: "購物",
+                        title: "美國村（American Village）日落海灘與晚餐",
+                        desc: "充滿美式繽紛色彩的海濱商圈！傍晚在日落海灘欣賞夕陽，晚上逛 Depot Island 並享用塔可飯或牛排。",
+                        mapCode: "33 526 450*63",
+                        mapQuery: "美國村"
+                    }
+                ]
+            },
+            {
+                day: 3,
+                date: "DAY 3",
+                title: "北部海洋博與絕美古宇利島",
+                subtitle: "萬座毛 ➔ 美麗海水族館 ➔ 岸本食堂 ➔ 古宇利島 ➔ 本部牧場",
+                items: [
+                    {
+                        time: "09:00",
+                        category: "景點",
+                        title: "萬座毛",
+                        desc: "矗立在東海上的經典象鼻形狀珊瑚礁岩，沿著新設的環形步道散步，欣賞漸層蒂芬妮藍大海。",
+                        mapCode: "206 312 039*17",
+                        mapQuery: "萬座毛"
+                    },
+                    {
+                        time: "10:30",
+                        category: "景點",
+                        title: "沖繩美麗海水族館（黑潮之海）",
+                        desc: "沖繩必訪王牌景點！在巨大水槽前仰望震撼的鯨鯊與鬼蝠魟悠游，園區內還有免費海豚劇場表演。",
+                        mapCode: "553 075 797*74",
+                        mapQuery: "沖繩美麗海水族館"
+                    },
+                    {
+                        time: "13:30",
+                        category: "美食",
+                        title: "午餐：岸本食堂（きしもと食堂）",
+                        desc: "創業超過百年的沖繩麵名店！使用傳統木灰水製作的Q彈麵條，搭配軟嫩三層肉與炊飯超滿足。",
+                        mapCode: "206 857 635*85",
+                        mapQuery: "岸本食堂"
+                    },
+                    {
+                        time: "15:30",
+                        category: "景點",
+                        title: "古宇利大橋 ＆ 心形岩（Heart Rock）",
+                        desc: "開車馳騁在筆直跨海的古宇利大橋上，左右兩側都是透明果凍海！接著前往海灘尋找浪漫的心形岩。",
+                        mapCode: "485 751 179*33",
+                        mapQuery: "古宇利島 心形岩"
+                    },
+                    {
+                        time: "18:30",
+                        category: "美食",
+                        title: "晚餐：燒肉本部牧場（焼肉もとぶ牧場）",
+                        desc: "大口品嚐自家牧場培育的頂級「本部牛」黑毛和牛，油花細緻入口即化，建議提前預約。",
+                        mapCode: "206 856 434*77",
+                        mapQuery: "燒肉本部牧場"
+                    }
+                ]
+            },
+            {
+                day: 4,
+                date: "DAY 4",
+                title: "恩納青洞浮潛與南部文化之旅",
+                subtitle: "真榮田岬青洞 ➔ 海人食堂 ➔ 玉泉洞 ➔ 瀨長島看飛機",
+                items: [
+                    {
+                        time: "09:00",
+                        category: "景點",
+                        title: "真榮田岬（青之洞窟浮潛 / 潛水）",
+                        desc: "陽光折射進海蝕洞穴形成夢幻的藍寶石光芒，還能近距離餵食成群熱帶魚，教練會協助拍照記錄。",
+                        mapCode: "206 062 685*85",
+                        mapQuery: "真榮田岬 青之洞窟"
+                    },
+                    {
+                        time: "12:00",
+                        category: "美食",
+                        title: "午餐：海人食堂（讀谷村漁協）",
+                        desc: "就位在漁港旁邊！必點招牌「海人丼」，鋪滿新鮮生魚片、海葡萄與甜蝦，吹著海風吃超愜意。",
+                        mapCode: "33 792 330*44",
+                        mapQuery: "海人食堂 讀谷"
+                    },
+                    {
+                        time: "14:30",
+                        category: "景點",
+                        title: "沖繩世界文化王國（玉泉洞）",
+                        desc: "探索歷經 30 萬年形成的日本最大級鐘乳石洞「玉泉洞」，地下奇觀搭配打燈非常壯觀。",
+                        mapCode: "232 495 330*28",
+                        mapQuery: "沖繩世界文化王國 玉泉洞"
+                    },
+                    {
+                        time: "17:00",
+                        category: "美食",
+                        title: "瀨長島 Umikaji Terrace（幸福鬆餅與看飛機）",
+                        desc: "純白希臘風山坡聚落！一邊吃著蓬鬆的「幸福鬆餅」，一邊近距離看那霸機場飛機起降與夕陽。",
+                        mapCode: "33 002 602*22",
+                        mapQuery: "瀨長島 Umikaji Terrace"
+                    }
+                ]
+            },
+            {
+                day: 5,
+                date: "DAY 5",
+                title: "絕美海景 Outlet 採買與滿載返程",
+                subtitle: "知念岬公園 ➔ 奧武島天婦羅 ➔ ASHIBINAA Outlet ➔ 還車搭機",
+                items: [
+                    {
+                        time: "09:30",
+                        category: "景點",
+                        title: "知念岬公園",
+                        desc: "擁有 270 度無死角太平洋視野的海岬公園，清晨海風徐徐、海面閃耀著鑽石般的光芒。",
+                        mapCode: "232 594 503*30",
+                        mapQuery: "知念岬公園"
+                    },
+                    {
+                        time: "11:00",
+                        category: "美食",
+                        title: "奧武島（中本鮮魚天婦羅店）",
+                        desc: "開車過橋來到純樸的貓咪小島！排隊買剛炸好的現撈鮮魚、花枝與海藻天婦羅，銅板價超美味。",
+                        mapCode: "232 467 265*25",
+                        mapQuery: "奧武島 中本鮮魚天婦羅"
+                    },
+                    {
+                        time: "13:00",
+                        category: "購物",
+                        title: "ASHIBINAA 沖繩奧特萊斯購物中心",
+                        desc: "距離機場僅 15 分鐘車程！集結上百家歐美日品牌與運動服飾，把握上機前最後免稅掃貨機會。",
+                        mapCode: "232 544 452*22",
+                        mapQuery: "ASHIBINAA 沖繩奧特萊斯購物中心"
+                    },
+                    {
+                        time: "16:00",
+                        category: "交通/租車",
+                        title: "臨空豐崎還車 ➔ 搭乘接駁車前往那霸機場",
+                        desc: "記得先在附近加油站加滿 Regular 汽油並保留收據！還車後搭接駁車至那霸機場國際線航廈返台。",
+                        mapCode: "232 543 478*42",
+                        mapQuery: "那霸機場 國際線航廈"
+                    }
+                ]
+            }
+        ];
+
+        // 分類標籤顏色對應表
+        const categoryStyles = {
+            "交通/租車": "bg-sky-50 text-sky-700 border-sky-200",
+            "住宿": "bg-indigo-50 text-indigo-700 border-indigo-200",
+            "景點": "bg-teal-50 text-teal-700 border-teal-200",
+            "美食": "bg-amber-50 text-amber-700 border-amber-200",
+            "購物": "bg-cyan-50 text-cyan-700 border-cyan-200"
+        };
+
+        let currentDay = 1;
+
+        // 渲染天數膠囊按鈕與當日行程
+        function renderItinerary(dayNumber) {
+            currentDay = dayNumber;
+            const pillsContainer = document.getElementById('day-pills');
+            pillsContainer.innerHTML = itineraryData.map(d => {
+                const isActive = d.day === dayNumber;
+                return `
+                    <button onclick="renderItinerary(${d.day})" 
+                        class="px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                            isActive 
+                            ? 'bg-brand-600 text-white shadow-md scale-105' 
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }">
+                        ${d.date}
+                    </button>
+                `;
+            }).join('');
+
+            const dayObj = itineraryData.find(d => d.day === dayNumber);
+            
+            // 渲染當日摘要
+            document.getElementById('day-summary').innerHTML = `
+                <div class="bg-gradient-to-r from-brand-600 to-sky-500 text-white rounded-2xl p-4 shadow-md fade-in">
+                    <div class="flex items-center space-x-2 text-cyan-100 text-xs font-semibold mb-1">
+                        <span>${dayObj.date} 自駕主題路線</span>
+                    </div>
+                    <h2 class="text-lg font-bold">${dayObj.title}</h2>
+                    <p class="text-xs text-cyan-50 mt-1">${dayObj.subtitle}</p>
+                </div>
+            `;
+
+            // 渲染時間軸卡片（包含 MapCode 與 Google Maps 導航）
+            const listContainer = document.getElementById('itinerary-list');
+            listContainer.innerHTML = dayObj.items.map((item, idx) => {
+                const badgeClass = categoryStyles[item.category] || "bg-slate-100 text-slate-700";
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery + ' 沖繩')}`;
+                return `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 relative fade-in" style="animation-delay: ${idx * 0.05}s">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg font-mono">
+                                    ⏰ ${item.time}
+                                </span>
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badgeClass}">
+                                    ${item.category}
+                                </span>
+                            </div>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-1.5">${item.title}</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">${item.desc}</p>
+                        
+                        <!-- MapCode 資訊列 -->
+                        <div class="flex items-center justify-between bg-sky-50/80 border border-sky-100 rounded-xl px-3 py-2 mb-3">
+                            <div class="flex items-center space-x-1.5">
+                                <span class="text-[11px] font-bold text-sky-700">🚗 MapCode</span>
+                                <span class="text-xs font-mono font-bold text-slate-800">${item.mapCode}</span>
+                            </div>
+                            <button onclick="copyText('${item.mapCode}', '已複製 MapCode：${item.mapCode}')" 
+                                class="text-[11px] font-bold text-brand-700 bg-white hover:bg-brand-50 px-2.5 py-1 rounded-lg border border-sky-200 shadow-sm active:scale-95 transition">
+                                複製 MapCode
+                            </button>
+                        </div>
+
+                        <!-- 一鍵開啟 Google Maps 導航按鈕 -->
+                        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" 
+                            class="w-full inline-flex items-center justify-center space-x-1.5 bg-slate-900 hover:bg-brand-600 text-white font-semibold py-2.5 rounded-xl text-xs transition active:scale-98 shadow-sm">
+                            <svg class="w-4 h-4 text-cyan-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
+                            <span>一鍵開啟 Google Maps 導航</span>
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 2. 匯率換算器邏輯（支援記憶自訂匯率）
+        const jpyInput = document.getElementById('jpy-input');
+        const rateInput = document.getElementById('exchange-rate');
+
+        // 載入儲存的自訂匯率
+        const savedRate = localStorage.getItem('okinawa_guide_exchange_rate');
+        if (savedRate) {
+            rateInput.value = savedRate;
+        }
+
+        function calculateCurrency() {
+            const jpy = parseFloat(jpyInput.value) || 0;
+            const rate = parseFloat(rateInput.value) || 0.215;
+
+            // 一般含稅台幣
+            const twd = Math.round(jpy * rate);
+            // 免稅日幣 (扣除 10% 消費稅，即除以 1.1)
+            const taxFreeJpy = Math.round(jpy / 1.1);
+            const taxFreeTwd = Math.round(taxFreeJpy * rate);
+
+            document.getElementById('twd-result').textContent = twd.toLocaleString();
+            document.getElementById('taxfree-jpy').textContent = taxFreeJpy.toLocaleString();
+            document.getElementById('taxfree-twd').textContent = taxFreeTwd.toLocaleString();
+
+            renderQuickRateTable(rate);
+        }
+
+        function addJpy(amount) {
+            const current = parseFloat(jpyInput.value) || 0;
+            jpyInput.value = current + amount;
+            calculateCurrency();
+        }
+
+        function clearJpy() {
+            jpyInput.value = '';
+            calculateCurrency();
+        }
+
+        function renderQuickRateTable(rate) {
+            const presets = [500, 1000, 3000, 5500, 10000, 30000];
+            const container = document.getElementById('quick-rate-table');
+            container.innerHTML = presets.map(val => {
+                const twd = Math.round(val * rate);
+                const taxFreeTwd = Math.round((val / 1.1) * rate);
+                return `
+                    <div class="py-2.5 flex justify-between items-center">
+                        <span class="font-mono font-semibold text-slate-700">¥ ${val.toLocaleString()}</span>
+                        <div class="text-right">
+                            <span class="font-bold text-slate-900">NT$ ${twd.toLocaleString()}</span>
+                            ${val >= 5500 ? `<span class="text-[11px] text-brand-600 ml-1.5">(免稅約 $${taxFreeTwd.toLocaleString()})</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        jpyInput.addEventListener('input', calculateCurrency);
+        rateInput.addEventListener('input', () => {
+            localStorage.setItem('okinawa_guide_exchange_rate', rateInput.value);
+            calculateCurrency();
+        });
+
+        // 3. 隨身檢查清單邏輯 (使用獨立的 okinawa_guide_checklists key 避免與舊版衝突)
+        const defaultChecklists = {
+            packing: [
+                { id: 'op1', text: '台灣駕照正本（取車必備，缺一不可！）', checked: false },
+                { id: 'op2', text: '駕照日文譯本（監理站申請，取車必備！）', checked: false },
+                { id: 'op3', text: '護照正本（確認效期 6 個月以上）', checked: false },
+                { id: 'op4', text: '日幣現金與海外回饋信用卡', checked: false },
+                { id: 'op5', text: '太陽眼鏡與高係數防曬乳', checked: false },
+                { id: 'op6', text: '泳衣與海灘鞋（青洞浮潛 / 海灘玩水用）', checked: false },
+                { id: 'op7', text: '行動電源與車充線（導航非常耗電）', checked: false }
+            ],
+            shopping: [
+                { id: 'os1', text: '御菓子御殿 紅芋塔（元祖紅いもタルト）', checked: false },
+                { id: 'os2', text: '雪鹽金楚糕（宮古島雪塩ちんすこう）', checked: false },
+                { id: 'os3', text: '福砂屋長崎蛋糕 / 沖繩限定黑糖伴手禮', checked: false },
+                { id: 'os4', text: 'Orion 啤酒周邊 T 恤與限定啤酒', checked: false },
+                { id: 'os5', text: '藥妝店 合利他命 EX Plus / EVE 止痛藥', checked: false },
+                { id: 'os6', text: '35 咖啡（珊瑚烘焙咖啡禮盒）', checked: false }
+            ]
+        };
+
+        let checklistState = JSON.parse(localStorage.getItem('okinawa_guide_checklists')) || defaultChecklists;
+        let currentChecklistType = 'packing';
+
+        function saveChecklists() {
+            localStorage.setItem('okinawa_guide_checklists', JSON.stringify(checklistState));
+        }
+
+        function switchChecklistType(type) {
+            currentChecklistType = type;
+            const btnPacking = document.getElementById('subtab-packing');
+            const btnShopping = document.getElementById('subtab-shopping');
+
+            if (type === 'packing') {
+                btnPacking.className = "py-2.5 rounded-xl text-sm font-bold transition bg-white text-slate-900 shadow-sm";
+                btnShopping.className = "py-2.5 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900";
+                document.getElementById('checklist-progress-label').textContent = "自駕與打包進度";
+            } else {
+                btnShopping.className = "py-2.5 rounded-xl text-sm font-bold transition bg-white text-slate-900 shadow-sm";
+                btnPacking.className = "py-2.5 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900";
+                document.getElementById('checklist-progress-label').textContent = "伴手禮採買完成度";
+            }
+            renderChecklist();
+        }
+
+        function renderChecklist() {
+            const items = checklistState[currentChecklistType];
+            const container = document.getElementById('checklist-container');
+
+            // 更新進度條
+            const total = items.length;
+            const completed = items.filter(i => i.checked).length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            document.getElementById('checklist-progress-text').textContent = `${completed} / ${total} (${percent}%)`;
+            document.getElementById('checklist-progress-bar').style.width = `${percent}%`;
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-sm">目前沒有項目，從上方新增一個吧！</div>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="bg-white rounded-xl p-3.5 shadow-sm border border-slate-100 flex items-center justify-between transition ${item.checked ? 'opacity-60 bg-slate-50' : ''}">
+                    <label class="flex items-center space-x-3 flex-1 cursor-pointer select-none">
+                        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleChecklistItem('${item.id}')"
+                            class="w-5 h-5 rounded-md text-brand-600 border-slate-300 focus:ring-brand-500 cursor-pointer">
+                        <span class="text-sm font-medium ${item.checked ? 'line-through text-slate-400' : 'text-slate-800'}">
+                            ${escapeHtml(item.text)}
+                        </span>
+                    </label>
+                    <button onclick="deleteChecklistItem('${item.id}')" class="text-slate-300 hover:text-rose-500 p-1.5 transition" title="刪除項目">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleChecklistItem(id) {
+            const item = checklistState[currentChecklistType].find(i => i.id === id);
+            if (item) {
+                item.checked = !item.checked;
+                saveChecklists();
+                renderChecklist();
+            }
+        }
+
+        function addChecklistItem(e) {
+            e.preventDefault();
+            const input = document.getElementById('new-item-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            checklistState[currentChecklistType].unshift({
+                id: 'item_' + Date.now(),
+                text: text,
+                checked: false
+            });
+            input.value = '';
+            saveChecklists();
+            renderChecklist();
+            showToast('已新增至清單');
+        }
+
+        function deleteChecklistItem(id) {
+            checklistState[currentChecklistType] = checklistState[currentChecklistType].filter(i => i.id !== id);
+            saveChecklists();
+            renderChecklist();
+        }
+
+        // 4. 底部 Tab 切換邏輯
+        function switchTab(tabName) {
+            // 隱藏所有頁面
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // 顯示目標頁面
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            // 重置所有底部按鈕樣式
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-400 hover:text-slate-700 font-medium transition";
+            });
+            // 高亮當前按鈕
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            activeBtn.className = "nav-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-brand-600 bg-brand-50/80 font-bold transition";
+
+            // 切換時捲動回頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 5. 大字版溝通彈窗與複製功能
+        function openBigTextModal(jpText, subText) {
+            document.getElementById('modal-jp-text').textContent = jpText;
+            document.getElementById('modal-sub-text').textContent = subText;
+            document.getElementById('big-text-modal').classList.remove('hidden');
+        }
+
+        function closeBigTextModal() {
+            document.getElementById('big-text-modal').classList.add('hidden');
+        }
+
+        function copyText(text, msg) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(msg || '已複製到剪貼簿！');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2000);
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // 初始化頁面
+        window.addEventListener('DOMContentLoaded', () => {
+            renderItinerary(1);
+            calculateCurrency();
+            renderChecklist();
+        });
+    </script>
+</body>
+</html>
